@@ -3,23 +3,16 @@ package com.example.demo.controllers;
 import com.example.demo.dao.PersonDAO;
 import com.example.demo.dao.TestModelDAO;
 import com.example.demo.models.Person;
-import com.example.demo.models.TestModel;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.example.demo.responses.PersonResponse;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.stereotype.Controller;
+
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
-
-import javax.print.attribute.standard.Media;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
+
 
 /**
  * @author timtims
@@ -37,12 +30,12 @@ public class HelloController {
         this.testModel = testModel;
     }
 
+
     @RequestMapping(value = "/hello", method = RequestMethod.GET)
+    @ApiOperation(value = "Тестирование простого ответа сервера", response = String.class)
     public String sayHello(@RequestParam(value = "name", required=false, defaultValue="World") String name) {
         return "<b>Привет </b>" + name + "!";
-        //model.addAttribute("name", name);
-        // return "hello";
-    }
+            }
 
     /*@RequestMapping(value = "/")
     public String sayHello() {
@@ -51,19 +44,27 @@ public class HelloController {
         // return "hello";
     }*/
 
-    @RequestMapping(value = "/acc", produces = MediaType.APPLICATION_JSON_VALUE)
-    String sayAccounts(Model model) {
-        /*model.addAttribute("users", personDAO.findAll());
-        return "ok";*/
-        JsonNodeFactory factory = JsonNodeFactory.instance;
-        ArrayNode root = factory.arrayNode();
+    @RequestMapping(value = "/by", method = RequestMethod.GET)
+    public String sayBy(@RequestParam(value = "name", required=false, defaultValue="World") String name) {
+        return "<b>Пока </b>" + name + "!";
+    }
+
+    @ApiOperation(value = "Получение списка личностей", response = Iterable.class)
+    @RequestMapping(value = "/acc",  method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    List<PersonResponse> sayAccounts(Model model) {
+
+        /*JsonNodeFactory factory = JsonNodeFactory.instance;
+        ArrayNode root = factory.arrayNode();*/
+
         List<Person> persons = new ArrayList<Person>();
+
         personDAO.findAll().forEach(persons::add);
 
-                //accounts.stream().map(it  -> it.toString()).collect(Collectors.joining(" "));
+        return persons.stream().map(person -> new PersonResponse(person.getId(), person.getSurName(), person.getName(), person.getPatronymic())).
+               collect(Collectors.toList());
 
 
-       return persons.stream().map(person-> person.toJson()).collect(Collectors.joining(", ","{\"success\":true, \"data\": [","]}"));
+       //return persons.stream().map(person-> person.toJson()).collect(Collectors.joining(", ","[","]"));
 
         /*persons.forEach(person ->{
             ObjectNode entry = root.addObject();
@@ -82,7 +83,7 @@ public class HelloController {
 
     }
 
-    @ModelAttribute(name= "countrieslist")
+    /*@ModelAttribute(name= "countrieslist")
     public List<String> populateCountries() {
 
         List<String> countries= new ArrayList<String>();
@@ -104,5 +105,5 @@ public class HelloController {
 
         return modelview;
     }
-
+*/
 }
